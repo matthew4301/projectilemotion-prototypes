@@ -1,15 +1,16 @@
 import pygame
 import math
 import matplotlib.pyplot as plt
-import datetime as dt
-
-# 150 pixels is a meter
 
 pygame.init()
 info = pygame.display.Info()
 window = pygame.display.set_mode((info.current_w,info.current_h))
 pygame.display.set_caption("Projectile Motion")
 clock = pygame.time.Clock()
+
+# y = (tan theta)x - (4.905/r**2 cos**2 theta)*x**2
+# r = magnitude of velocity
+# theta = angle
 
 fps = 60
 distance = 0
@@ -19,10 +20,7 @@ black = (0, 0, 0)
 red = (255, 0, 0)
 green = (0, 100, 0)
 blue = (0, 0, 255)
-font = pygame.font.SysFont("Comic Sans MS", 20, False)
-
-flist = []
-tlist = []
+font = pygame.font.SysFont("Comic Sans MS", 30, False)
 
 ground_r = pygame.Rect(0, info.current_h-200, info.current_w, 100)
 ball_r = pygame.Rect(5,ground_r.y-10,10,10)
@@ -53,28 +51,29 @@ def ballmotion():
     vdistance = round(((info.current_h-210)-mousey)/150,2)
     velocity()
     time = math.sqrt(vvelocity**2+hvelocity**2)/9.81
-    window.blit(font.render(f"Vertical Distance: {vdistance}m", True, black, None),(2,60))
-    window.blit(font.render(f"Horizontal Distance: {hdistance}m", True, black, None),(2,80))
-    window.blit(font.render(f"Vertical Velocity: {vvelocity}m/s", True, black, None), (2,20))
-    window.blit(font.render(f"Horizonal Velocity: {hvelocity}m/s", True, black, None), (2,40))
+    window.blit(font.render(f"Vertical Distance: {vdistance}m", True, black, None),(2,120))
+    window.blit(font.render(f"Horizontal Distance: {hdistance}m", True, black, None),(2,160))
+    window.blit(font.render(f"Vertical Velocity: {vvelocity}m/s", True, black, None), (2,40))
+    window.blit(font.render(f"Horizonal Velocity: {hvelocity}m/s", True, black, None), (2,80))
     window.blit(font.render(f"Angle: {angle}°", True, black, None),(2,0))
-    window.blit(font.render(f"Time: {round(time,2)}s", True, black, None),(2,100))
+    window.blit(font.render(f"Time: {round(time,2)}s", True, black, None),(2,200))
     window.blit(font.render("1m", True, black, None),(150,ball_r.y+10))
 
 def mainloop():
+    global angle,vvelocity,hvelocity
     run = True
     i=0
     while run:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                plt.savefig('graph.png')  
                 run = False
-        i+=1
-        if i%2 == 0:
-            flist.append(clock.get_fps())
-            tlist.append(dt.datetime.now().strftime('%H:%M:%S'))
-            plt.xticks(rotation=45, ha='right',fontsize=4)
-            plt.plot(tlist,flist)
+                r = math.sqrt(vvelocity**2+hvelocity**2)
+                x = [0,1,2,3,4,5]
+                y = [0,0,0,0,0,0]
+                for i in range(len(x)):
+                    y[i] = (math.tan(angle))*x[i] - (4.905/(r**2)*(math.cos(angle)**2))*(x[i]**2)
+                    plt.plot(x[i],y[i])
+                plt.savefig('image.png')
         window.fill(white)
         pygame.draw.rect(window,green,ground_r)
         pygame.draw.rect(window,black,ball_r)
