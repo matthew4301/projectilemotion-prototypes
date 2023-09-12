@@ -47,14 +47,14 @@ def ballmotion():
     if keys[pygame.K_DOWN]:
         mousey+=5
     pygame.draw.line(window,red,pygame.math.Vector2(ball_r.x+10,ball_r.y),pygame.math.Vector2(mousex,mousey),5)
-    leny = (mousey-ground_r.y+10)/150
-    lenx = (mousex-15)/150
+    leny = (mousey-ground_r.y+10)/600
+    lenx = (mousex-15)/600
     try:
         angle = (round(math.degrees(math.atan(leny/lenx)),1))*-1 
     except ZeroDivisionError:
         angle = 90
-    hdistance = round((mousex)/150,2)
-    vdistance = round(((info.current_h-210)-mousey)/150,2)
+    hdistance = round((mousex)/600,2)
+    vdistance = round(((info.current_h-210)-mousey)/600,2)
     velocity()
     duration = math.sqrt(vvelocity**2+hvelocity**2)/9.81
     window.blit(font.render(f"Vertical Distance: {vdistance}m", True, black, None),(2,120))
@@ -63,17 +63,18 @@ def ballmotion():
     window.blit(font.render(f"Horizonal Velocity: {hvelocity}m/s", True, black, None), (2,80))
     window.blit(font.render(f"Angle: {angle}°", True, black, None),(2,0))
     window.blit(font.render(f"Time: {round(duration,2)}s", True, black, None),(2,200))
-    window.blit(font.render("1m", True, black, None),(150,ball_r.y+10))
+    window.blit(font.render("1m", True, black, None),(600,ball_r.y+10))
 
 def mainloop():
     global angle,vvelocity,hvelocity,duration
     run = True
-    graphs = False
     i=0
+    j=0
     x = []
     y = []
     x2 = []
     y2 = []
+    currenttime = []
     while run:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -95,24 +96,27 @@ def mainloop():
         window.fill(white)
         pygame.draw.rect(window,green,ground_r)
         pygame.draw.rect(window,black,ball_r)
-        ballmotion()
+        ballmotion()   
         keys = pygame.key.get_pressed()
         if keys[pygame.K_SPACE]:
-            currenttime = time.time()
-            if time.time() < time.time()+duration or graphs == True:
-                graphs = True
-                print("pass")
-                pass
-            print("not pass")
-            window.blit(font.render("graph", True, black, None),(300,200))
-            r = math.sqrt(vvelocity**2+hvelocity**2)
-            x.append(i)
-            x2.append(-i)
-            y.append(r * math.sin(angle) * x[i] - (0.5) * 9.81 * x[i]**2)
-            y2.append(-(r * math.sin(angle) * x[i] - (0.5) * 9.81 * x[i]**2))           
-            i+=1
-        pygame.draw.line(window,blue,pygame.Vector2(ball_r.x,ball_r.y+10),pygame.Vector2((hdistance*150),(ball_r.y+10)),3)
-        pygame.draw.line(window,green,pygame.Vector2(ball_r.x,ball_r.y+10),pygame.Vector2((ball_r.x),((info.current_h-210)-vdistance*150)),3)
+            currenttime.append(time.time())
+            try:
+                if currenttime[j] >= currenttime[0]+duration:
+                    pass
+                else:
+                    window.blit(font.render("graph", True, black, None),(300,200))
+                    r = math.sqrt(vvelocity**2+hvelocity**2)
+                    x.append(i)
+                    x2.append(-i)
+                    y.append(r * math.sin(angle) * x[i] - (0.5) * 9.81 * x[i]**2)
+                    y2.append(-(r * math.sin(angle) * x[i] - (0.5) * 9.81 * x[i]**2))           
+                    i+=1
+                j+=1
+            except IndexError:
+                currenttime = []
+                j=0
+        pygame.draw.line(window,blue,pygame.Vector2(ball_r.x,ball_r.y+10),pygame.Vector2((hdistance*600),(ball_r.y+10)),3)
+        pygame.draw.line(window,green,pygame.Vector2(ball_r.x,ball_r.y+10),pygame.Vector2((ball_r.x),((info.current_h-210)-vdistance*600)),3)
         pygame.display.update()
         clock.tick(fps)
     pygame.quit()
