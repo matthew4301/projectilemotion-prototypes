@@ -57,18 +57,16 @@ def ballmotion():
     vdistance = round(((info.current_h-210)-mousey)/150,2)
     velocity()
     duration = math.sqrt(vvelocity**2+hvelocity**2)/9.81
-    window.blit(font.render(f"Vertical Distance: {vdistance}m", True, black, None),(2,120))
-    window.blit(font.render(f"Horizontal Distance: {hdistance}m", True, black, None),(2,160))
+    mouse_x,mouse_y = pygame.mouse.get_pos()
     window.blit(font.render(f"Vertical Velocity: {vvelocity}m/s", True, black, None), (2,40))
     window.blit(font.render(f"Horizonal Velocity: {hvelocity}m/s", True, black, None), (2,80))
     window.blit(font.render(f"Angle: {angle}°", True, black, None),(2,0))
-    window.blit(font.render(f"Time: {round(duration,2)}s", True, black, None),(2,200))
+    window.blit(font.render(f"Time: {round(duration,2)}s", True, black, None),(2,120))
     window.blit(font.render("1m", True, black, None),(150,ball_r.y+10))
 
 def mainloop():
     global angle,vvelocity,hvelocity,duration
     run = True
-    complete = False
     i=0
     j=0
     x = []
@@ -80,21 +78,6 @@ def mainloop():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
-                up = y[len(y)-1]*-1
-                right = x2[len(x2)-1]*-1
-                for i in range(len(x2)):
-                    x2[i]+=right
-                    x[i]+=right
-                for i in range(len(y2)):
-                    y2[i]*=-1
-                    y2[i]+=up
-                    y[i]+=up
-                x2.reverse()
-                y2.reverse()
-                x2.extend(x)
-                y2.extend(y)
-                x=x2
-                y=y2
                 plt.plot(x,y)
                 plt.savefig(f'image.png')
         window.fill(white)
@@ -107,22 +90,17 @@ def mainloop():
             try:
                 if currenttime[j] >= currenttime[0]+duration:
                     for i in range(len(x)):
-                        if 15+x[i]*10 >= len(x):
-                            break
-                        newx = 15+x[i]*10
-                        if ((ground_r.y-15)+x[i]) < 0:
-                            newy = -((ground_r.y-15)+y[i])  
-                        newy = ((ground_r.y-15)+y[i])
-                        print(newx,newy)
-                        ball_r2 = pygame.Rect(newx,newy,10,10)
+                        newx = (ball_r.x-x[i]*10)
+                        if newx < 0:
+                            newx*=-1
+                        newy = ((info.current_h-200)-y[i])
+                        ball_r2 = pygame.Rect (newx,newy,5,5)
                         pygame.draw.rect(window,black,ball_r2)
                 else:
                     window.blit(font.render("graph", True, black, None),(300,200))
-                    r = math.sqrt(vvelocity**2+hvelocity**2)
+                    r = vvelocity**2+hvelocity**2
                     x.append(i)
-                    x2.append(-i)
-                    y.append(r * math.sin(angle) * x[i] - (0.5) * 9.81 * x[i]**2)
-                    y2.append(-(r * math.sin(angle) * x[i] - (0.5) * 9.81 * x[i]**2))          
+                    y.append(x[i]*math.tan(angle)-(9.81*x[i]**2)*((1+math.tan(angle)**2)/(2*r**2)))
                     i+=1
                 j+=1
             except IndexError:
