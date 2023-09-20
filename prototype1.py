@@ -4,8 +4,9 @@ import matplotlib.pyplot as plt
 import time
 
 pygame.init()
-info = pygame.display.Info()
-window = pygame.display.set_mode((info.current_w,info.current_h))
+width = 800
+height = 600
+window = pygame.display.set_mode((width,height))
 pygame.display.set_caption("Projectile Motion")
 clock = pygame.time.Clock()
 
@@ -18,10 +19,10 @@ red = (255, 0, 0)
 green = (0, 100, 0)
 blue = (0, 0, 255)
 font = pygame.font.SysFont("Comic Sans MS", 30, False)
-mousex = (info.current_w)/2
-mousey = (info.current_h)/2
+mousex = (width)/2
+mousey = (height)/2
 
-ground_r = pygame.Rect(0, info.current_h-200, info.current_w, 100)
+ground_r = pygame.Rect(0, height-100, width, 100)
 ball_r = pygame.Rect(5,ground_r.y-10,10,10)
 
 def velocity():
@@ -46,22 +47,22 @@ def ballmotion():
         mousey-=5
     if keys[pygame.K_DOWN]:
         mousey+=5
-    pygame.draw.line(window,red,pygame.math.Vector2(ball_r.x+10,ball_r.y),pygame.math.Vector2(mousex,mousey),5)
-    leny = (mousey-ground_r.y+10)/300
-    lenx = (mousex-15)/300
+    pygame.draw.aaline(window,red,pygame.math.Vector2(ball_r.x+10,ball_r.y),pygame.math.Vector2(mousex,mousey),5)
+    leny = (mousey-ground_r.y+10)/(width/4)
+    lenx = (mousex-15)/(width/4)
     try:
         angle = (round(math.degrees(math.atan(leny/lenx)),1))*-1 
     except ZeroDivisionError:
         angle = 90
-    hdistance = round((mousex)/300,2)
-    vdistance = round(((info.current_h-210)-mousey)/300,2)
+    hdistance = round((mousex)/(width/4),2)
+    vdistance = round(((height-210)-mousey)/(width/4),2)
     velocity()
     duration = math.sqrt(vvelocity**2+hvelocity**2)/9.81
     window.blit(font.render(f"Vertical Velocity: {vvelocity}m/s", True, black, None), (2,40))
     window.blit(font.render(f"Horizonal Velocity: {hvelocity}m/s", True, black, None), (2,80))
     window.blit(font.render(f"Angle: {angle}°", True, black, None),(2,0))
     window.blit(font.render(f"Time: {round(duration,2)}s", True, black, None),(2,120))
-    window.blit(font.render("1m", True, black, None),(300,ball_r.y+10))
+    window.blit(font.render("1m", True, black, None),((width/4),ball_r.y+10))
 
 def mainloop():
     global angle,vvelocity,hvelocity,duration,lenx,leny
@@ -85,30 +86,26 @@ def mainloop():
         if keys[pygame.K_SPACE]:
             currenttime.append(time.time())
             try:
-                if currenttime[j] >= currenttime[0]+duration:
+                if currenttime[j] >= currenttime[0]+(duration*4):
                     for i in range(len(x)):
                         newx = (ball_r.x+x[i]*5)
                         newy = (ball_r.y-y[i]*5)
-                        if newy < 0:
-                            newy*=-1
-                            y[i]*=-1
-                        if newx < 0:
-                            newx*=-1
-                            x[i]*=-1 
                         ball_r2 = pygame.Rect(newx,newy,5,5)
                         pygame.draw.rect(window,black,ball_r2)
                 else:
-                    window.blit(font.render("graph", True, black, None),(300,200))
+                    window.blit(font.render("graph", True, black, None),((width/4),200))
                     r = vvelocity**2+hvelocity**2
                     x.append(i)
+                    k = leny/lenx
+                    #y.append((k*(x[i]**2))-(9.81*(x[i]**2))*((1+(k**2))/(2*(r**2))))
                     y.append(x[i]*math.tan(leny/lenx)-(9.81*(x[i]**2))*((1+(math.tan(leny/lenx)**2))/(2*(r**2))))
                     i+=1
                 j+=1
             except IndexError:
                 currenttime = []
                 j=0
-        pygame.draw.line(window,blue,pygame.Vector2(ball_r.x,ball_r.y+10),pygame.Vector2((hdistance*300),(ball_r.y+10)),3)
-        pygame.draw.line(window,green,pygame.Vector2(ball_r.x,ball_r.y+10),pygame.Vector2((ball_r.x),((info.current_h-210)-vdistance*300)),3)
+        pygame.draw.line(window,blue,pygame.Vector2(ball_r.x,ball_r.y+10),pygame.Vector2((hdistance*(width/4)),(ball_r.y+10)),3)
+        pygame.draw.line(window,green,pygame.Vector2(ball_r.x,ball_r.y+10),pygame.Vector2((ball_r.x),((height-210)-vdistance*(width/4))),3)
         pygame.display.update()
         clock.tick(fps)
     pygame.quit()
