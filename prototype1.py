@@ -28,6 +28,7 @@ duration = 0
 meter = 1
 
 ground_r = pygame.Rect(0, height-100, width, 100)
+groundcoll_r = pygame.Rect(0, height-110, width, 10)
 ball_r = pygame.Rect(5,ground_r.y-10,10,10)
 
 def velocity():
@@ -63,20 +64,20 @@ def ballmotion():
     vdistance = round((leny/meter),2)
     velocity()
     #duration = ((math.sqrt(vvelocity**2+hvelocity**2))*math.sin(angle)/gravity)*2
-    window.blit(font.render(f"Vertical Velocity: {vvelocity}m/s", True, black, None), (2,40))
-    window.blit(font.render(f"Horizonal Velocity: {hvelocity}m/s", True, black, None), (2,80))
+    window.blit(font.render(f"Vertical Velocity: {round(vvelocity/300,2)}m/s", True, black, None), (2,40))
+    window.blit(font.render(f"Horizonal Velocity: {round(hvelocity/300,2)}m/s", True, black, None), (2,80))
     window.blit(font.render(f"Angle: {angle}°", True, black, None),(2,0))
     window.blit(font.render(f"Time: {round(duration,2)}s", True, black, None),(2,120))
-    window.blit(font.render("1m", True, black, None),((meter),ball_r.y+10))
+    window.blit(font.render("1m", True, black, None),((300),ball_r.y+10))
 
 def mainloop():
     global angle,vvelocity,hvelocity,duration,lenx,leny
     run = True
-    i=0
-    j=0
     x = []
     y = []
-    currenttime = []
+    newx = 0
+    newy = 0
+    stop = False
     while run:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -85,19 +86,23 @@ def mainloop():
                 plt.savefig(f'image.png')
         window.fill(white)
         pygame.draw.rect(window,green,ground_r)
+        pygame.draw.rect(window,white,groundcoll_r)
         pygame.draw.rect(window,black,ball_r)
+        ball_r2 = pygame.Rect(newx,newy,10,10) 
+        pygame.draw.rect(window,black,ball_r2) 
         ballmotion()   
         keys = pygame.key.get_pressed()
         if keys [pygame.K_a]:
             duration = 0
-        if keys[pygame.K_SPACE]:
-            duration+=0.05
+            stop = False
+        if keys[pygame.K_SPACE] and stop == False:
+            duration+=0.075
             distancex = (hvelocity/2)*duration
             distancey = ((vvelocity/2)*duration)+((-4.9 * (duration**2))/2)
             newx = ((ball_r.x)+distancex)
-            newy = (ball_r.y-distancey)
-            ball_r2 = pygame.Rect(newx,newy,10,10)                        
-            pygame.draw.rect(window,black,ball_r2)
+            newy = (ball_r.y-distancey)                      
+        if pygame.Rect.contains(groundcoll_r,ball_r2):
+            stop = True
         pygame.draw.line(window,blue,pygame.Vector2(ball_r.x,ball_r.y+10),pygame.Vector2((hdistance),(ball_r.y+10)),3)
         pygame.draw.line(window,green,pygame.Vector2(ball_r.x,ball_r.y+10),pygame.Vector2((ball_r.x),((height-210)-vdistance)),3)
         pygame.display.update()
