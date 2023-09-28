@@ -3,6 +3,8 @@ import math
 import matplotlib.pyplot as plt
 import time
 
+# https://www.youtube.com/watch?v=Y4xlUNfrvow try this video please
+# use this and get it to show the trajectory path of the object and calc velocity
 pygame.init()
 width = 800
 height = 600
@@ -22,6 +24,8 @@ font = pygame.font.SysFont("Comic Sans MS", 30, False)
 mousex = (width)/2
 mousey = (height)/2
 gravity = 9.81
+duration = 0    
+meter = 1
 
 ground_r = pygame.Rect(0, height-100, width, 100)
 ball_r = pygame.Rect(5,ground_r.y-10,10,10)
@@ -55,20 +59,15 @@ def ballmotion():
         angle = (round(math.degrees(math.atan(leny/lenx)),1))
     except ZeroDivisionError:
         angle = 90
-    hdistance = round((lenx)/(width/2),2)
-    vdistance = round((leny)/(width/2),2)
+    hdistance = round((lenx/meter),2)
+    vdistance = round((leny/meter),2)
     velocity()
-    magv = math.sqrt(vvelocity**2+hvelocity**2)
     #duration = ((math.sqrt(vvelocity**2+hvelocity**2))*math.sin(angle)/gravity)*2
-    duration = magv/gravity
-    
-    if duration < 0:
-        duration*=-1
     window.blit(font.render(f"Vertical Velocity: {vvelocity}m/s", True, black, None), (2,40))
     window.blit(font.render(f"Horizonal Velocity: {hvelocity}m/s", True, black, None), (2,80))
     window.blit(font.render(f"Angle: {angle}°", True, black, None),(2,0))
     window.blit(font.render(f"Time: {round(duration,2)}s", True, black, None),(2,120))
-    window.blit(font.render("1m", True, black, None),((width/2),ball_r.y+10))
+    window.blit(font.render("1m", True, black, None),((meter),ball_r.y+10))
 
 def mainloop():
     global angle,vvelocity,hvelocity,duration,lenx,leny
@@ -89,29 +88,18 @@ def mainloop():
         pygame.draw.rect(window,black,ball_r)
         ballmotion()   
         keys = pygame.key.get_pressed()
+        if keys [pygame.K_a]:
+            duration = 0
         if keys[pygame.K_SPACE]:
-            currenttime.append(time.time())
-            try:
-                if currenttime[j] >= currenttime[0]+(duration):
-                    for i in range(len(x)):
-                        newx = ((ball_r.x+5)+x[i]*5)
-                        newy = (ball_r.y-y[i]*5)
-                        ball_r2 = pygame.Rect(newx,newy,5,5)
-                        pygame.draw.rect(window,black,ball_r2)
-                else:
-                    window.blit(font.render("graph", True, black, None),((width/2),200))
-                    r = vvelocity**2+hvelocity**2
-                    x.append(i)
-                    k = leny/lenx
-                    # negative values causing bad graph maybe?????1?1?!?
-                    y.append(x[i]*math.tan(leny/lenx)-(gravity*(x[i]**2))*((1+(math.tan(leny/lenx)**2))/(2*(r**2))))
-                    i+=1
-                j+=1
-            except IndexError:
-                currenttime = []
-                j=0
-        pygame.draw.line(window,blue,pygame.Vector2(ball_r.x,ball_r.y+10),pygame.Vector2((hdistance*(width/2)),(ball_r.y+10)),3)
-        pygame.draw.line(window,green,pygame.Vector2(ball_r.x,ball_r.y+10),pygame.Vector2((ball_r.x),((height-210)-vdistance*(width/2))),3)
+            duration+=0.05
+            distancex = (hvelocity/2)*duration
+            distancey = ((vvelocity/2)*duration)+((-4.9 * (duration**2))/2)
+            newx = ((ball_r.x)+distancex)
+            newy = (ball_r.y-distancey)
+            ball_r2 = pygame.Rect(newx,newy,10,10)                        
+            pygame.draw.rect(window,black,ball_r2)
+        pygame.draw.line(window,blue,pygame.Vector2(ball_r.x,ball_r.y+10),pygame.Vector2((hdistance),(ball_r.y+10)),3)
+        pygame.draw.line(window,green,pygame.Vector2(ball_r.x,ball_r.y+10),pygame.Vector2((ball_r.x),((height-210)-vdistance)),3)
         pygame.display.update()
         clock.tick(fps)
     pygame.quit()
