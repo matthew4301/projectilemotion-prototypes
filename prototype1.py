@@ -1,6 +1,6 @@
 import pygame
 import math
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import time
 
 # https://www.youtube.com/watch?v=Y4xlUNfrvow try this video please
@@ -73,8 +73,8 @@ def ballmotion():
 def mainloop():
     global angle,vvelocity,hvelocity,duration,lenx,leny
     run = True
-    x = []
-    y = []
+    #x = []
+    #y = []
     newx = 0
     newy = 0
     stop = False
@@ -82,8 +82,8 @@ def mainloop():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
-                plt.plot(x,y)
-                plt.savefig(f'image.png')
+                #plt.plot(x,y)
+                #plt.savefig(f'image.png')
         window.fill(white)
         pygame.draw.rect(window,green,ground_r)
         pygame.draw.rect(window,white,groundcoll_r)
