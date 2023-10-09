@@ -10,6 +10,8 @@ window = pygame.display.set_mode((width,height))
 pygame.display.set_caption("Projectile Motion")
 clock = pygame.time.Clock()
 
+#please go through this and make it better please
+
 fps = 60
 distance = 0
 vdistance = 0
@@ -71,17 +73,19 @@ def ballmotion():
     hdistance = round((lenx/meter),2)
     vdistance = round((leny/meter),2)
     velocity()
-    window.blit(font.render(f"Vertical Velocity: {round(vvelocity/300,2)}m/s", True, black, None), (2,40))
-    window.blit(font.render(f"Horizonal Velocity: {round(hvelocity/300,2)}m/s", True, black, None), (2,80))
+    window.blit(font.render(f"Vertical Velocity: {round(vvelocity/50,2)}m/s", True, black, None), (2,40))
+    window.blit(font.render(f"Horizonal Velocity: {round(hvelocity/50,2)}m/s", True, black, None), (2,80))
     window.blit(font.render(f"Angle: {angle}°", True, black, None),(2,0))
     window.blit(font.render(f"Time: {round(duration,2)}s", True, black, None),(2,120))
-    window.blit(font.render("1m", True, black, None),((300),ball_r.y+10))
+    window.blit(font.render("1m", True, black, None),((100),ball_r.y+10))
 
 def mainloop():
     global angle,vvelocity,hvelocity,duration,lenx,leny,ball_r2,back
     run = True
     x = []
     y = []
+    veloc = []
+    time = []
     newx = ball_r.x
     newy = ball_r.y
     stop = False
@@ -89,37 +93,34 @@ def mainloop():
     while run:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                run = False
                 plt.plot(x,y)
                 plt.savefig(f'image.png')
+                run = False
         window.fill(white)
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_a]:
+            duration = 0
+            ball_r.x = 5
+            ball_r.y = height-110
+            newx = ball_r.x
+            newy = ball_r.y
+            stop = False
+            first = True
         pygame.draw.rect(window,green,ground_r)
         pygame.draw.rect(window,white,groundcoll_r)
         pygame.draw.rect(window,white,ball_r)
         ball_r2 = pygame.Rect(newx,newy,10,10) 
         pygame.draw.rect(window,black,ball_r2) 
         ballmotion()
-        keys = pygame.key.get_pressed()
-        if keys [pygame.K_a]:
-            duration = 0#
-            ball_r.x = 15
-            ball_r.y = height-115
-            stop = False
-            first = True
         if keys[pygame.K_SPACE] and stop == False:
             if first == True:
                 statichvel = hvelocity
                 staticvvel = vvelocity
-                #mag = math.sqrt(hvelocity**2+vvelocity**2)
-                #tof = ((2*mag)*math.sin(angle))/gravity
-                #tof = round(round_nearest(tof,0.05),2)*2
-                #if tof < 0:
-                #    tof*=-1
+                mag = math.sqrt(hvelocity**2+vvelocity**2)
+                veloc.append(mag)
                 first = False
-            #if duration >= tof:
-            #    duration = 0
-            #    stop = True
             duration+=0.1
+            time.append(duration)
             distancex = (statichvel/2)*duration
             distancey = ((staticvvel/2)*duration)+((-4.9 * (duration**2))/2)
             if back == True:
@@ -128,7 +129,7 @@ def mainloop():
                 newx = ((ball_r.x)+distancex)
             x.append(newx)
             newy = (ball_r.y-distancey)
-            y.append(height-newy)                      
+            y.append(height-newy)                   
         if pygame.Rect.contains(ground_r,ball_r2):
             stop = True
             first = True
