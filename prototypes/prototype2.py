@@ -38,15 +38,13 @@ class Ball():
     def movement(self,ball_r2,hvelocity,vvelocity,duration,first,back,mousex,mousey,angle):
         pygame.draw.rect(window,g.black,ball_r2) # movement does not work after first throw
         if first == True:
-            statichvel = hvelocity # changing velocity
-            staticvvel = vvelocity
-            mag = math.sqrt(statichvel**2+staticvvel**2)
+            mag = math.sqrt(hvelocity**2+vvelocity**2)
             velocities.append(mag)
             first = False
         duration+=0.1
         time.append(duration)
-        distancex = (statichvel/2)*duration            
-        distancey = ((staticvvel/2)*duration)+((-4.9 * (duration**2))/2)
+        distancex = (hvelocity/2)*duration            
+        distancey = ((vvelocity/2)*duration)+((-4.9 * (duration**2))/2)
         if back == True:
             newx = ((b.ball_r.x)-distancex)
             back = False
@@ -57,12 +55,19 @@ class Ball():
         y.append(height-newy)
         ball_r2 = pygame.Rect(newx,newy,10,10)
         window.fill(g.white)
-        g.draw(ball_r2,mousex,mousey)
+        g.draw(ball_r2)
         g.text(vvelocity,hvelocity,mousex,mousey,angle,duration)
         pygame.display.flip()
         clock.tick(fps)
         t.sleep(0.01)
         return duration,ball_r2,back
+    
+    def collision(self,first,duration,ball_r2):
+        first = True
+        duration = 0
+        b.ball_r.x = ball_r2.x
+        b.ball_r.y = ball_r2.y-15
+        return first,duration,ball_r2
 
     def reset(self): # reset if goes oob or allow for frame to be extended
         duration = 0
@@ -104,11 +109,10 @@ class Calculations():
         return hdistance,vdistance
     
     def graphs(self,x,y):
-        #plt.plot(x,y)
-        #plt.savefig("xy.png")
-        plt.plot(velocities,time) # graph not going through x axis
-        # negative velocity? and plot two separate graphs
-        plt.savefig("velocitytime.png")
+        fig, (ax1, ax2) = plt.subplots(1, 2)
+        ax1.plot(x,y)
+        ax2.plot(velocities,time)
+        fig.savefig("graphs/graphs.png")
 
 class Graphics():
     def __init__(self) -> None:
@@ -119,22 +123,21 @@ class Graphics():
         self.red = (255,0,0)
         self.black = (0,0,0)
 
-    def draw(self,ball_r2,mousex,mousey):
+    def draw(self,ball_r2):
         pygame.draw.rect(window,self.white,self.bounds)
         pygame.draw.rect(window,self.green,ground)
         pygame.draw.rect(window,self.white,b.ball_r)
         pygame.draw.rect(window,self.black,ball_r2)
 
     def bounds(self,ball_r2):
-        if pygame.Rect.contains(self.bounds,ball_r2) == False:
-            if ball_r2.y > 600:
-                ball_r2.y = 590
-            if ball_r2.y < 0:
-                ball_r2.y = 10
-            if ball_r2.x > 800:
-                ball_r2.x = 790
-            if ball_r2.x < 0:
-                ball_r2.x = 10
+        if ball_r2.y > 600:
+            ball_r2.y = 590
+        if ball_r2.y < 0:
+            ball_r2.y = 10
+        if ball_r2.x > 800:
+            ball_r2.x = 790
+        if ball_r2.x < 0:
+            ball_r2.x = 10
         return ball_r2
 
     def text(self,vvelocity,hvelocity,mousex,mousey,angle,duration):
@@ -164,17 +167,7 @@ def mainloop():
             lenx = (mousex+(b.ball_r.x+10))/10
         else:
             lenx = (mousex-(b.ball_r.x+10))/10
-        #ball_r2 = g.bounds(ball_r2)
-        if pygame.Rect.contains(g.bounds,ball_r2) == False:
-            if ball_r2.y > 600:
-                ball_r2.y = 590
-            if ball_r2.y < 0:
-                ball_r2.y = 10
-            if ball_r2.x > 800:
-                ball_r2.x = 790
-            if ball_r2.x < 0:
-                ball_r2.x = 10
-        g.draw(ball_r2,mousex,mousey)
+        g.draw(ball_r2)
         pygame.draw.line(window,g.red,pygame.math.Vector2(ball_r2.x+10,ball_r2.y),pygame.math.Vector2(mousex,mousey),5)
         hdistance,vdistance = c.distance(lenx,leny)
         angle,back = c.angle(back,lenx,leny)
@@ -187,11 +180,10 @@ def mainloop():
         if keys[pygame.K_SPACE]:
             while pygame.Rect.contains(ground,ball_r2) == False:
                 duration,ball_r2,back = b.movement(ball_r2,hvelocity,vvelocity,duration,first,back,mousex,mousey,angle)
+                if pygame.Rect.contains(g.bounds,ball_r2) == False:
+                    ball_r2 = g.bounds(ball_r2)
         if pygame.Rect.contains(ground,ball_r2):
-            first = True
-            duration = 0
-            b.ball_r.x = ball_r2.x
-            b.ball_r.y = ball_r2.y-15
+            first,duration,ball_r2 = b.collision(first,duration,ball_r2)
         pygame.display.update()
         clock.tick(fps)
     pygame.quit()
