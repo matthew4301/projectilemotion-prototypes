@@ -1,8 +1,6 @@
 import pygame
 import math
 import matplotlib.pyplot as plt
-import pylab as plb
-import time as t
 #import time
 
 pygame.init()
@@ -38,7 +36,7 @@ def round_nearest(num: float, to: float) -> float:
     return round(num / to) * to 
 
 def velocity():
-    global hdistance,vdistance,vvelocity,hvelocity,angle,x,y,mag
+    global hdistance,vdistance,vvelocity,hvelocity,angle
     try:
         vvelocity = round(math.sqrt(2*gravity*vdistance),2) 
     except ValueError:
@@ -46,19 +44,7 @@ def velocity():
     try:
         hvelocity = round(math.sqrt(2*gravity*hdistance),2)
     except ValueError:
-        hvelocity = 0 
-    y0=100
-    mag = math.sqrt(vvelocity**2+hvelocity**2)/5 
-    a=gravity
-    b=-2*mag*math.sin(angle)
-    c=-2*y0
-    coeff=plb.array([a,b,c])
-    t1,t2=plb.roots(coeff)
-    h1=mag**2*(math.sin(angle))**2/(2*gravity)
-    h_max=h1+y0
-    R=mag*math.cos(angle)*plb.max(t1,t2)
-    x=plb.linspace(0,R,50)
-    y=x*math.tan(angle)-(1/2)*(gravity*x**2)/(mag**2*(math.cos(angle))**2 )
+        hvelocity = 0  
     
 def ballmotion():
     global hdistance,vdistance,vvelocity,hvelocity,angle,duration,mousex,mousey,lenx,leny,ball_r2,back
@@ -76,7 +62,7 @@ def ballmotion():
     leny = height-((mousey+ball_r.y)-380)
     lenx = mousex-(ball_r.x+10)
     try:
-        angle = math.radians((round(math.degrees(math.atan(leny/lenx)),1)))
+        angle = (round(math.degrees(math.atan(leny/lenx)),1))
         if angle < 0:
             back = True
             angle*=-1
@@ -89,20 +75,21 @@ def ballmotion():
     velocity()
     window.blit(font.render(f"Vertical Velocity: {round(vvelocity/50,2)}m/s", True, black, None), (2,40))
     window.blit(font.render(f"Horizonal Velocity: {round(hvelocity/50,2)}m/s", True, black, None), (2,80))
-    window.blit(font.render(f"Angle: {round(angle,2)} radians", True, black, None),(2,0))
+    window.blit(font.render(f"Angle: {angle}°", True, black, None),(2,0))
     window.blit(font.render(f"Time: {round(duration,2)}s", True, black, None),(2,120))
     window.blit(font.render("1m", True, black, None),((100),ball_r.y+10))
 
 def mainloop():
-    global angle,vvelocity,hvelocity,duration,lenx,leny,ball_r2,back,x,y,mag
+    global angle,vvelocity,hvelocity,duration,lenx,leny,ball_r2,back
     run = True
+    x = []
+    y = []
     veloc = []
     time = []
     newx = ball_r.x
     newy = ball_r.y
     stop = False
     first = True
-    i = 0
     while run:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -127,16 +114,25 @@ def mainloop():
         ballmotion()
         if keys[pygame.K_SPACE] and stop == False:
             if first == True:
+                statichvel = hvelocity
+                staticvvel = vvelocity
+                mag = math.sqrt(hvelocity**2+vvelocity**2)
+                print(mag)
                 veloc.append(mag)
-                first = False               
+                first = False
+            duration+=0.1
             time.append(duration)
-            newx = ball_r2.x+x[i]
-            newy = ball_r2.y-y[i]  
-            i+=1
-            t.sleep(0.05)            
+            distancex = (statichvel/2)*duration
+            distancey = ((staticvvel/2)*duration)+((-4.9 * (duration**2))/2)
+            if back == True:
+                newx = ((ball_r.x)-distancex)
+            else:
+                newx = ((ball_r.x)+distancex)
+            x.append(newx)
+            newy = (ball_r.y-distancey)
+            y.append(height-newy)                   
         if pygame.Rect.contains(ground_r,ball_r2):
             stop = True
-            i=0
             first = True
             duration = 0
             ball_r.x = ball_r2.x
