@@ -109,6 +109,9 @@ def mainloop():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 plt.plot(time,veloc)
+                gradient = (2*mag)/veloc[1]
+                c = veloc[1]/(gradient*time[1])
+                print(f"y = {gradient}x + {c}")
                 plt.savefig(f'image.png')
                 run = False
         window.fill(white)
